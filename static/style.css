@@ -68,6 +68,7 @@ body {
     typing 0.8s steps(var(--chars)) var(--delay) forwards;
   border-right: 2px solid var(--accent);
   animation-fill-mode: forwards;
+  padding-right: 2px;
 }
 
 .typed.dim {
