@@ -23,7 +23,20 @@ jobs:
 
       - name: Build and push
         run: |
-          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/mcjel
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/mcjel --timeout=600 --async --format='value(id)' > /tmp/build_id.txt
+          BUILD_ID=$(cat /tmp/build_id.txt)
+          echo "Build ID: $BUILD_ID"
+          # Wait for build to complete
+          while true; do
+            STATUS=$(gcloud builds describe $BUILD_ID --format='value(status)')
+            echo "Status: $STATUS"
+            if [ "$STATUS" = "SUCCESS" ]; then break; fi
+            if [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "CANCELLED" ] || [ "$STATUS" = "TIMEOUT" ]; then
+              echo "Build failed with status: $STATUS"
+              exit 1
+            fi
+            sleep 15
+          done
 
       - name: Deploy
         run: |
